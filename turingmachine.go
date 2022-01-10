@@ -42,7 +42,6 @@ func wait(ms int) {
 }
 
 func main() {
-	// convert csv to map
 	table := make(map[string][]string)
 	for _, record := range readCsvFile("table.csv") {
 		table[record[0]+record[1]] = []string{record[2], record[3]}
@@ -59,7 +58,6 @@ func main() {
 	wait(250)
 
 	for {
-		// end program when the halting state has been reached
 		if state == halt {
 			break
 		}
