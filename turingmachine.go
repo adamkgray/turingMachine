@@ -100,8 +100,7 @@ func main() {
 
 		if result.action == "<-" {
 			if m.head == 0 {
-				log.Fatal("cannot move head to the left - already at the start of input tape")
-				os.Exit(1)
+				panic("attempted to move head past start of tape")
 			}
 			m.head--
 		} else if result.action == "->" {
