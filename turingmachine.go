@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -13,16 +14,14 @@ import (
 func readCsvFile(filePath string) [][]string {
 	f, err := os.Open(filePath)
 	if err != nil {
-		log.Fatal("Unable to read input file "+filePath, err)
+		log.Fatalf("Unable to read table file '%s': %s", filePath, err)
 	}
 	defer f.Close()
-
 	csvReader := csv.NewReader(f)
 	records, err := csvReader.ReadAll()
 	if err != nil {
-		log.Fatal("Unable to parse file as CSV for "+filePath, err)
+		log.Fatalf("Unable to parse file as CSV for '%s': %s", filePath, err)
 	}
-
 	return records
 }
 
@@ -41,48 +40,80 @@ func wait(ms int) {
 	time.Sleep(time.Duration(ms) * time.Millisecond)
 }
 
+type machine struct {
+	state string
+	halt  string
+	head  int
+}
+
+type instruction struct {
+	next   string
+	action string
+}
+
 func main() {
-	table := make(map[string][]string)
-	for _, record := range readCsvFile("table.csv") {
-		table[record[0]+record[1]] = []string{record[2], record[3]}
+	initial := flag.String("s", "s", "initial state symbol")
+	halt := flag.String("h", "h", "halting state symbol")
+	input := flag.String("i", "", "input tape")
+	file := flag.String("t", "table.csv", "turing machine rules")
+	flag.Parse()
+
+	tape := "^" + *input
+
+	m := machine{
+		state: *initial,
+		halt:  *halt,
+		head:  1,
 	}
 
-	args := os.Args
-	state := args[1]
-	halt := args[2]
-	input := "^" + args[3]
-	head := 1
+	rules := readCsvFile(*file)
+
+	table := make(map[string]instruction)
+	for _, rule := range rules {
+		// the key is the unique combination of
+		// current state and character read
+		current := rule[0]
+		read := rule[1]
+		next := rule[2]
+		action := rule[3]
+		key := current + read
+		table[key] = instruction{
+			next:   next,
+			action: action,
+		}
+	}
 
 	clear()
-	display(input, head)
+	display(tape, m.head)
 	wait(250)
 
 	for {
-		if state == halt {
+		if m.state == m.halt {
 			break
 		}
 
 		clear()
 
-		instruction := table[state+string(input[head])]
-		state = instruction[0]
+		rule := m.state + string(tape[m.head])
+		result := table[rule]
+		m.state = result.next
 
-		if instruction[1] == "<-" {
-			if head == 0 {
+		if result.action == "<-" {
+			if m.head == 0 {
 				log.Fatal("cannot move head to the left - already at the start of input tape")
 				os.Exit(1)
 			}
-			head = head - 1
-		} else if instruction[1] == "->" {
-			if head == len(input)-1 {
-				input = input + "_"
+			m.head--
+		} else if result.action == "->" {
+			if m.head == len(tape)-1 {
+				tape += "_"
 			}
-			head = head + 1
+			m.head++
 		} else {
-			input = input[:head] + instruction[1] + input[head+1:]
+			tape = tape[:m.head] + result.action + tape[m.head+1:]
 		}
 
-		display(input, head)
+		display(tape, m.head)
 		wait(250)
 	}
 }
