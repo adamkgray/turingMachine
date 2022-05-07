@@ -52,3 +52,5 @@ x,_,w,1
 w,1,v,->
 v,_,h,0
 ```
+Here is an example of this program executing:
+
