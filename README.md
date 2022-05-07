@@ -52,5 +52,4 @@ x,_,w,1
 w,1,v,->
 v,_,h,0
 ```
-![Here is the execution](/demo.mov)
-
+https://github.com/adamkgray/turingMachine/blob/main/demo.mov
