@@ -34,7 +34,7 @@ The state transition table is given by a CSV file. Refer to the following rules 
 - To erase a charcater on the tape, specify `_` in the action column
 - To write a character on the tape, for example `1`, specify `1` in the action column
 - To move the head right, specify `->` in the action column
-- To lmove the head left, specify `<-` in the action column
+- To move the head left, specify `<-` in the action column
 
 Here is an example program which appends `010` to any binary number input greater than `0`:
 ```
